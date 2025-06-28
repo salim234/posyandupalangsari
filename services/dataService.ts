@@ -195,6 +195,13 @@ const updateUser = async (userId: string, data: Partial<User>): Promise<User> =>
     return updatedUser;
 }
 
+const deleteUser = async (userId: string): Promise<void> => {
+    // Note: We are not deleting associated children to prevent data loss.
+    // In a real-world scenario, this might require archiving or reassigning children.
+    db.users = db.users.filter(u => u.id !== userId);
+    saveDb();
+};
+
 // Child Functions
 const getAllChildren = async (): Promise<Child[]> => {
     return [...db.children];
@@ -223,6 +230,11 @@ const addChild = async (data: Omit<Child, 'id' | 'growthHistory' | 'analysisHist
     saveDb();
     return newChild;
 }
+
+const deleteChild = async (childId: string): Promise<void> => {
+    db.children = db.children.filter(c => c.id !== childId);
+    saveDb();
+};
 
 // Data Record Functions
 const addGrowthRecord = async (childId: string, record: {weight: number, height: number, headCircumference: number}): Promise<GrowthRecord> => {
@@ -256,6 +268,13 @@ const addGrowthRecord = async (childId: string, record: {weight: number, height:
     saveDb();
     return newRecord;
 }
+
+const deleteGrowthRecord = async (childId: string, recordId: string): Promise<void> => {
+    const childIndex = db.children.findIndex(c => c.id === childId);
+    if (childIndex === -1) throw new Error("Child not found");
+    db.children[childIndex].growthHistory = db.children[childIndex].growthHistory.filter(r => r.id !== recordId);
+    saveDb();
+};
 
 const addAnalysisRecord = async (childId: string, kader: User, analysisText: string): Promise<AnalysisRecord> => {
     const childIndex = db.children.findIndex(c => c.id === childId);
@@ -375,11 +394,14 @@ export const dataService = {
     addUser,
     getUserById,
     updateUser,
+    deleteUser,
     getAllChildren,
     getChildrenByParentId,
     getChildById,
     addChild,
+    deleteChild,
     addGrowthRecord,
+    deleteGrowthRecord,
     addAnalysisRecord,
     addImmunizationRecord,
     addMilestoneRecord,

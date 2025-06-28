@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Child, User, Role, GrowthStatus, ImmunizationStatus } from '../../types';
@@ -151,6 +152,18 @@ const KaderDashboard: React.FC = () => {
       setIsAddChildModalOpen(false);
   }
 
+  const handleDeleteChild = async (childId: string, childName: string) => {
+      if (window.confirm(`Apakah Anda yakin ingin menghapus data anak '${childName}'? Semua riwayat pertumbuhan, imunisasi, dan analisis akan ikut terhapus secara permanen.`)) {
+          try {
+              await dataService.deleteChild(childId);
+              setChildren(prev => prev.filter(c => c.id !== childId));
+          } catch (error) {
+              console.error("Failed to delete child", error);
+              alert("Gagal menghapus data anak.");
+          }
+      }
+  };
+
   const filteredChildren = useMemo(() => {
     return children
         .filter(child => child.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -242,6 +255,15 @@ const KaderDashboard: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <Button as={Link} to={`/child/${child.id}`} size="sm" variant="ghost">
                                 Lihat Detail
+                            </Button>
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="!text-red-500 hover:!bg-red-100"
+                                onClick={() => handleDeleteChild(child.id, child.name)}
+                                title="Hapus data anak"
+                            >
+                                <ICONS.trash className="w-4 h-4" />
                             </Button>
                         </td>
                     </tr>

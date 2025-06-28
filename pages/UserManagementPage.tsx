@@ -1,5 +1,6 @@
 
 
+
 import React, { useEffect, useState } from 'react';
 import { User, Role } from '../types';
 import { dataService } from '../services/dataService';
@@ -7,6 +8,8 @@ import Card, { CardContent, CardHeader, CardFooter } from '../components/ui/Card
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import EditUserModal from '../components/forms/EditUserModal';
+import { useAuth } from '../hooks/useAuth';
+import { ICONS } from '../constants';
 
 const AddUserModal: React.FC<{
   isOpen: boolean;
@@ -63,6 +66,7 @@ const AddUserModal: React.FC<{
 
 
 const UserManagementPage: React.FC = () => {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
@@ -94,6 +98,18 @@ const UserManagementPage: React.FC = () => {
       setIsEditUserModalOpen(false);
       setEditingUser(null);
   }
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+      if (window.confirm(`Apakah Anda yakin ingin menghapus pengguna "${userName}"? Aksi ini tidak dapat dibatalkan.`)) {
+          try {
+              await dataService.deleteUser(userId);
+              setUsers(prev => prev.filter(u => u.id !== userId));
+          } catch (error) {
+              console.error("Failed to delete user", error);
+              alert("Gagal menghapus pengguna.");
+          }
+      }
+  };
 
   const getRoleBadgeColor = (role: string) => {
     switch(role) {
@@ -151,7 +167,17 @@ const UserManagementPage: React.FC = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <Button variant="ghost" size="sm" onClick={() => handleOpenEditModal(user)}>
-                                    Edit
+                                    <ICONS.edit className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="!text-red-500 hover:!bg-red-100"
+                                    onClick={() => handleDeleteUser(user.id, user.name)}
+                                    disabled={user.id === currentUser?.id}
+                                    title={user.id === currentUser?.id ? "Anda tidak bisa menghapus akun sendiri" : "Hapus pengguna"}
+                                >
+                                    <ICONS.trash className="w-4 h-4" />
                                 </Button>
                             </td>
                             </tr>

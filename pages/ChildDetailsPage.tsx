@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -568,7 +569,7 @@ const ChildDetailsPage: React.FC = () => {
             return { ...prevChild, [key]: newHistory };
         });
     };
-    
+
     const handleGrowthRecordAdded = (newRecord: GrowthRecord) => {
         handleStateUpdate('growthHistory', newRecord);
         setIsGrowthModalOpen(false);
@@ -582,6 +583,27 @@ const ChildDetailsPage: React.FC = () => {
     const handleImmunizationUpdate = (newRecord: Immunization) => {
         handleStateUpdate('immunizationHistory', newRecord);
     }
+    
+    const handleGrowthRecordDeleted = (recordId: string) => {
+        setChild(prevChild => {
+            if (!prevChild) return null;
+            const updatedHistory = prevChild.growthHistory.filter(r => r.id !== recordId);
+            return { ...prevChild, growthHistory: updatedHistory };
+        });
+    }
+    
+    const handleDeleteGrowthRecord = async (recordId: string) => {
+        if (!child) return;
+        if (window.confirm(`Apakah Anda yakin ingin menghapus catatan pertumbuhan ini? Aksi ini tidak dapat dibatalkan.`)) {
+            try {
+                await dataService.deleteGrowthRecord(child.id, recordId);
+                handleGrowthRecordDeleted(recordId);
+            } catch (error) {
+                console.error("Failed to delete growth record", error);
+                alert("Gagal menghapus catatan pertumbuhan.");
+            }
+        }
+    };
 
     if (loading) return <div className="text-center p-8">Memuat data detail anak...</div>;
     if (error) return <div className="text-center p-8 text-red-600 bg-red-100 rounded-lg">{error}</div>;
@@ -663,6 +685,7 @@ const ChildDetailsPage: React.FC = () => {
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Berat (kg)</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Tinggi (cm)</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">L. Kepala (cm)</th>
+                                {user?.role === Role.Kader && <th className="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -673,6 +696,19 @@ const ChildDetailsPage: React.FC = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">{record.weight}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">{record.height}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">{record.headCircumference}</td>
+                                    {user?.role === Role.Kader && (
+                                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                className="!text-red-500 hover:!bg-red-100 p-2" 
+                                                onClick={() => handleDeleteGrowthRecord(record.id)}
+                                                title="Hapus catatan"
+                                            >
+                                                <ICONS.trash className="w-4 h-4"/>
+                                            </Button>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

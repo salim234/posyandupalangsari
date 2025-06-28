@@ -1,5 +1,6 @@
 {
   "name": "Buku Kesehatan Ibu & Anak Digital",
   "description": "A digital application to record and monitor mother and child health, growth, and development, designed for citizens, health volunteers (kader), and administrators.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "prompt": ""
 }
