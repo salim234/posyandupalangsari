@@ -77,9 +77,14 @@ const LoginPage: React.FC = () => {
                  </div>
             </div>
         </Card>
-         <p className="text-center text-sm text-slate-500 mt-8">
+         <div className="text-center mt-8">
+            <p className="text-sm text-slate-500">
                 © 2024 Posyandu Desa Palangsari Puspo. All rights reserved.
             </p>
+            <p className="text-sm text-slate-500 font-semibold mt-1">
+                Pengembang Aplikasi : M Nur Salim
+            </p>
+        </div>
        </div>
     </div>
   );
